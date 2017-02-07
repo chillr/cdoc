@@ -1,6 +1,7 @@
 require 'cdoc/version'
 require 'rake'
-Bundler.require(:default)
+require 'redcarpet'
+require 'pygments'
 
 module Cdoc
   class DocRenderer < Redcarpet::Render::HTML
