@@ -5,5 +5,4 @@ require "cdoc"
 
 # Aims to generate documentaion for Rails controller
 # default target folder is app/controllers in a Rails application
-require 'pry'
 Cdoc::CDoc.new.generate
