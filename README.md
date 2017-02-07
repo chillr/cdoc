@@ -1,8 +1,35 @@
 # Cdoc
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/cdoc`. To experiment with that code, run `bin/console` for an interactive prompt.
+Cdoc generates a simple single page api documentation from the rails application source code comments.
+To use cdoc you need to add a directive `#doc` for every comment block in the api.
 
-TODO: Delete this and the text above, and describe your gem
+For example
+
+```
+#doc
+# @endpoint /api/v1/accounts/list
+# @params
+#  {
+#    user_id: '123456'
+#  }
+# @response
+#  {
+#    accounts: [
+#      {
+#        id: 100,
+#        account_number: '11111111111',
+#        ifsc_code: 'IFSC111111'
+#      },
+#      {
+#        id: 101,
+#        account_number: '111111111112',
+#        ifsc_code: 'IFSC111112'
+#      }
+#    ]
+#  }
+```
+
+The code sections will be highligted if a 2 space indentation is used. Alos if the code section is a valid json then the section will be highlighted.
 
 ## Installation
 
