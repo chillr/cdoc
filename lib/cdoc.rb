@@ -2,15 +2,14 @@ require 'cdoc/version'
 require 'rake'
 require 'redcarpet'
 require 'pygments'
+require 'json'
 
 module Cdoc
+
   class DocRenderer < Redcarpet::Render::HTML
     def block_code(code, lang='text')
       lang = lang && lang.split.first || "text"
       Pygments.highlight(code, lexer: lang)
-      # output = add_code_tags(
-      #   Pygmentize.process(code, lang), lang
-      # )
     end
   end
 
@@ -39,7 +38,7 @@ module Cdoc
           break
         elsif m = line.match(/@\w+/)         # tag line if it start with @<tag>
           block = tagged_line(line, m[0])
-        elsif line.start_with?('  ') # if the line start with 2 or more spaces
+        elsif line.start_with?('  ')         # if the line start with 2 or more spaces
           code_block = []
           code_block << line.sub('  ', '')
 
