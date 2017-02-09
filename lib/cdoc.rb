@@ -1,6 +1,5 @@
 require 'cdoc/version'
 require 'rake'
-require 'redcarpet'
 require 'pygments'
 require 'json'
 
