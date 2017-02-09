@@ -93,6 +93,24 @@ module Cdoc
               index = index + 1
             end
           end
+        elsif unordered_list?(line)
+          list_block = []
+          list_block << line.sub(/\-|\*/, '').strip
+
+          loop do
+            line = lines[index + 1]
+
+            if line.nil? || !unordered_list?(line)
+              list_block.join('\n')
+              break
+            else
+              list_block << line.sub(/\-|\*/, '').strip
+              index = index + 1
+            end
+          end
+
+          list_block = list_block.map { |i| ['<footer>', i, '</footer>'].join('') }
+          block = ['<blockquote>', list_block, '</blockquote>'].flatten.join("\n")
         else
           block = [line, '<br/>'].join('')
         end
@@ -107,6 +125,11 @@ module Cdoc
       end
 
       @content << template % { section_header: section_header, section_body: sub_section.join("\n")}
+    end
+
+    def unordered_list?(line)
+      l = line.strip
+      l.start_with?('- ') || l.start_with?('* ')
     end
 
     def tagged_line(line, tag)
