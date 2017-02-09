@@ -16,19 +16,11 @@ module Cdoc
     end
   end
 
-  class DocRenderer < Redcarpet::Render::HTML
-    def block_code(code, lang='text')
-      lang = lang && lang.split.first || "text"
-      Pygments.highlight(code, lexer: lang)
-    end
-  end
-
   class DocString
 
     include Helpers
 
     def initialize
-      @docstring = ''
       @content = []
     end
 
@@ -36,13 +28,21 @@ module Cdoc
       @title = title
     end
 
+    def sidebar(keys)
+      return if keys.empty?
+
+      tmpl_item = '<a href="#%{id}" class="list-group-item">%{item}</a>'
+
+      items = keys.map do |key|
+        tmpl_item % { id: to_id(key), item: key.capitalize }
+      end
+
+      @sidebar = ['<div class="list-group">', items, '</div>'].flatten.join("\n")
+    end
+
     def section(str)
       template = "<p id='%{id}'><h3>%{str}</h3></p>"
       @content <<  template % { id: to_id(str), str: str }
-    end
-
-    def sidebar(sidebar)
-      @sidebar = sidebar
     end
 
     def subsection(str)
@@ -57,7 +57,7 @@ module Cdoc
         </div>
       </div>)
 
-          lines = str.split("\n")
+      lines = str.split("\n")
       index = 0
       section_header = ''
       sub_section = []
@@ -127,14 +127,7 @@ module Cdoc
 
     def finish
       FileUtils.mkdir_p('doc') unless Dir.exists?('doc')
-      render_as_markdown
       render_as_html
-    end
-
-    def render_as_markdown
-      f = File.open('doc/index.md', 'w+')
-      f.write(@docstring)
-      f.close
     end
 
     def content
@@ -145,8 +138,6 @@ module Cdoc
       layout_file = File.join(File.dirname(__FILE__), 'layouts/bootstrap.html')
       layout = File.read(layout_file)
       f = File.open('doc/index.html', 'w+')
-      renderer = DocRenderer.new
-      markdown = Redcarpet::Markdown.new(renderer, fenced_code_blocks: true)
       html = layout % { title: @title, sidebar: @sidebar, content: content }
       f.write(html)
       f.close
@@ -167,26 +158,16 @@ module Cdoc
       @doc = DocString.new
     end
 
-    def generate_sidebar(keys)
-      tmpl_item = '<a href="#%{id}" class="list-group-item">%{item}</a>'
-
-      items = keys.map do |key|
-        tmpl_item % { id: to_id(key), item: key.capitalize }
-      end
-
-      ['<div class="list-group">', items, '</div>'].flatten.join("\n")
-    end
-
     def generate
-      @doc.title('Chillr API Documentaion')
+      @doc.title(ENV['TITLE'] || 'Chillr API Documentaion')
 
-      @file_groups = files.group_by { |f| File.basename(f, '_controller.rb') }
+      file_groups = files.group_by { |f| File.basename(f, '_controller.rb') }
 
-      sidebar = generate_sidebar(@file_groups.keys)
+      # Generates sidebar
+      @doc.sidebar(file_groups.keys)
 
-      @doc.sidebar(sidebar)
-
-      @file_groups.each do |group, files|
+      # Generates body
+      file_groups.each do |group, files|
         @doc.section(group.capitalize)
         files.each do |file|
           docs = extract_documentation(file)
@@ -207,8 +188,8 @@ module Cdoc
         return
       end
 
-      docs  = []
-      doclines = []
+      sections  = []
+      section_doc_lines = []
       recording = false
 
       lines.each do |line|
@@ -223,22 +204,20 @@ module Cdoc
           if line.empty?
             next
           elsif line.start_with?('#')
-            doclines << line.strip.sub('#', '')
+            section_doc_lines << line.strip.sub('#', '')
           else
             recording = false
-            docs << doclines.join("\n")
-            doclines = []
+            sections << section_doc_lines.join("\n")
+            section_doc_lines = []
           end
         end
       end
 
-      if recording && (doclines.length != 0)
-        recording = false
-        docs << doclines.join("\n")
-        doclines = []
+      if recording && (section_doc_lines.length != 0)
+        sections << section_doc_lines.join("\n")
       end
 
-      docs
+      sections
     end
   end
 end

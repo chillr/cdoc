@@ -7,7 +7,7 @@ For example
 
 ```
 #doc
-# @endpoint /api/v1/accounts/list
+# @api /api/v1/accounts/list
 # @params
 #  {
 #    user_id: '123456'
@@ -29,7 +29,17 @@ For example
 #  }
 ```
 
-The code sections will be highligted if a 2 space indentation is used. Alos if the code section is a valid json then the section will be highlighted.
+The code sections will be highligted if a 2 space indentation is used. Also if the code section is a valid json then the section will be highlighted.
+
+## Tags
+
+If a line starts with `@word` then the line is considered as a tagged line. The text after the tagged line is simply highlighted.
+
+eg : @api /api/v1/accounts/list will be rendered as
+
+Api **/api/v1/accounts/list**
+
+To make it simple none of the tags is considered special at the moment.
 
 ## Installation
 
@@ -51,8 +61,11 @@ Or install it yourself as:
 
 cd to your rails application and run
 
-    $ cdoc
-    $ open doc/index.html
+    $ cdoc TITLE="Fizbuz API Documentation"
+    $ cd doc
+    $ ruby -run -e httpd -- -p 5000 .   # start a web server to serve the generated files
+
+Now open the browser and go to [http://localhost:5000](http://localhost:5000) to view the documentation.
 
 ## Development
 
