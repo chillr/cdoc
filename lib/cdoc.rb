@@ -10,6 +10,10 @@ module Cdoc
     def to_id(str)
       str.gsub(/\W/, '').downcase
     end
+
+    def highlight(code, lang)
+      Pygments.highlight(code, lexer: lang)
+    end
   end
 
   class DocRenderer < Redcarpet::Render::HTML
@@ -78,7 +82,7 @@ module Cdoc
               begin
                 json = JSON.parse(code_str)
                 code_str = JSON.pretty_generate(json)
-                block = ['<pre><code>', code_str, '</code></pre>'].join('')
+                block = highlight(code_str, 'json')
               rescue JSON::ParserError => e
                 # puts e.message
                 block = ['<pre><code>', code_str, '</code></pre>'].join("\n")
@@ -147,10 +151,7 @@ module Cdoc
       f.write(html)
       f.close
 
-      unless Dir.exists?('doc/css')
-        puts File.join(File.dirname(__FILE__), 'styles')
-        FileUtils.cp_r(File.join(File.dirname(__FILE__), 'styles'), 'doc/css')
-      end
+      FileUtils.cp_r(File.join(File.dirname(__FILE__), 'styles'), 'doc/')
     end
   end
 
